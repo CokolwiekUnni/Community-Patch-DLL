@@ -94,6 +94,44 @@ INSERT INTO Defines (Name, Value)
 SELECT 'APPROACH_WAR_AI_PERCENT', '0';
 
 
+-- Target Value Multipliers to Approach Weights
+-- WAR and HOSTILE approach scores are multiplied by whichever of these values is appropriate, and then divided by 100.
+-- NOTE: Target Value is also affected by proximity!
+
+-- Normal Target Value Multiplier
+INSERT INTO Defines (Name, Value)
+SELECT 'NORMAL_WAR_MULTIPLIER_TARGET_SOFT', '150';
+
+INSERT INTO Defines (Name, Value)
+SELECT 'NORMAL_WAR_MULTIPLIER_TARGET_FAVORABLE', '125';
+
+INSERT INTO Defines (Name, Value)
+SELECT 'NORMAL_WAR_MULTIPLIER_TARGET_AVERAGE', '75';
+
+INSERT INTO Defines (Name, Value)
+SELECT 'NORMAL_WAR_MULTIPLIER_TARGET_BAD', '50';
+
+INSERT INTO Defines (Name, Value)
+SELECT 'NORMAL_WAR_MULTIPLIER_TARGET_IMPOSSIBLE', '25';
+
+-- Conquest Target Value Multiplier
+-- Applied if AI really wants to conquer this player.
+INSERT INTO Defines (Name, Value)
+SELECT 'CONQUEST_WAR_MULTIPLIER_TARGET_SOFT', '200';
+
+INSERT INTO Defines (Name, Value)
+SELECT 'CONQUEST_WAR_MULTIPLIER_TARGET_FAVORABLE', '150';
+
+INSERT INTO Defines (Name, Value)
+SELECT 'CONQUEST_WAR_MULTIPLIER_TARGET_AVERAGE', '100';
+
+INSERT INTO Defines (Name, Value)
+SELECT 'CONQUEST_WAR_MULTIPLIER_TARGET_BAD', '75';
+
+INSERT INTO Defines (Name, Value)
+SELECT 'CONQUEST_WAR_MULTIPLIER_TARGET_IMPOSSIBLE', '50';
+
+
 -- Proximity Multipliers to Approach Weights
 -- Approach is multiplied by whichever of these values is appropriate, and then divided by 100.
 
@@ -105,12 +143,12 @@ INSERT INTO Defines (Name, Value)
 SELECT 'APPROACH_MULTIPLIER_PROXIMITY_CLOSE', '125';
 
 INSERT INTO Defines (Name, Value)
-SELECT 'APPROACH_MULTIPLIER_PROXIMITY_FAR', '100';
+SELECT 'APPROACH_MULTIPLIER_PROXIMITY_FAR', '75';
 
 INSERT INTO Defines (Name, Value)
-SELECT 'APPROACH_MULTIPLIER_PROXIMITY_DISTANT', '75';
+SELECT 'APPROACH_MULTIPLIER_PROXIMITY_DISTANT', '50';
 
--- Conquest Multiplier (proximity multiplier to WAR and HOSTILE approaches if AI is going for domination or just really wants to conquer this player)
+-- Conquest Multiplier (proximity multiplier to WAR and HOSTILE approaches if AI really wants to conquer this player)
 -- 115
 UPDATE Defines
 SET Value = '200'
@@ -123,12 +161,12 @@ WHERE Name = 'APPROACH_WAR_PROXIMITY_CLOSE';
 
 -- 60
 UPDATE Defines
-SET Value = '125'
+SET Value = '100'
 WHERE Name = 'APPROACH_WAR_PROXIMITY_FAR';
 
 -- 50
 UPDATE Defines
-SET Value = '100'
+SET Value = '75'
 WHERE Name = 'APPROACH_WAR_PROXIMITY_DISTANT';
 
 

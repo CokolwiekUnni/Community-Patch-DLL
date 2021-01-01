@@ -297,43 +297,39 @@ void CvCityCitizens::DoTurn()
 			bForceCheck = true;
 		}
 	}
-#if defined(MOD_AI_SMART_V3)
+
 	bool bWonder = false;
 	bool bSettler = false;
 	CvUnitEntry* pkUnitInfo = NULL;
 
-	if (MOD_AI_SMART_V3)
+	const OrderData* pOrderNode = m_pCity->headOrderQueueNode();
+
+	CvBuildingClassInfo* pkBuildingClassInfo = NULL;
+	if (pOrderNode != NULL && pOrderNode->eOrderType == ORDER_TRAIN)
 	{
-		const OrderData* pOrderNode = m_pCity->headOrderQueueNode();
-
-		CvBuildingClassInfo* pkBuildingClassInfo = NULL;
-		if (pOrderNode != NULL && pOrderNode->eOrderType == ORDER_TRAIN)
+		pkUnitInfo = GC.getUnitInfo((UnitTypes)pOrderNode->iData1);
+		if (pkUnitInfo != NULL && pkUnitInfo->IsFound())
 		{
-			pkUnitInfo = GC.getUnitInfo((UnitTypes)pOrderNode->iData1);
-			if (pkUnitInfo != NULL && pkUnitInfo->IsFound())
-			{
-				bSettler = true;
-			}
+			bSettler = true;
 		}
-		else if (pOrderNode != NULL && pOrderNode->eOrderType == ORDER_CONSTRUCT)
-		{
-			CvBuildingEntry* pkOrderBuildingInfo = GC.getBuildingInfo((BuildingTypes)pOrderNode->iData1);
+	}
+	else if (pOrderNode != NULL && pOrderNode->eOrderType == ORDER_CONSTRUCT)
+	{
+		CvBuildingEntry* pkOrderBuildingInfo = GC.getBuildingInfo((BuildingTypes)pOrderNode->iData1);
 
-			if (pkOrderBuildingInfo)
+		if (pkOrderBuildingInfo)
+		{
+			const BuildingClassTypes eOrderBuildingClass = (BuildingClassTypes)pkOrderBuildingInfo->GetBuildingClassType();
+			if (eOrderBuildingClass != NO_BUILDINGCLASS)
 			{
-				const BuildingClassTypes eOrderBuildingClass = (BuildingClassTypes)pkOrderBuildingInfo->GetBuildingClassType();
-				if (eOrderBuildingClass != NO_BUILDINGCLASS)
+				pkBuildingClassInfo = GC.getBuildingClassInfo(eOrderBuildingClass);
+				if (pkBuildingClassInfo && pkBuildingClassInfo->getMaxGlobalInstances() == 1)
 				{
-					pkBuildingClassInfo = GC.getBuildingClassInfo(eOrderBuildingClass);
-					if (pkBuildingClassInfo && pkBuildingClassInfo->getMaxGlobalInstances() == 1)
-					{
-						bWonder = true;
-					}
+					bWonder = true;
 				}
 			}
 		}
 	}
-#endif
 
 	if (m_pCity->IsPuppet())
 	{
@@ -4403,9 +4399,7 @@ void CvCityCitizens::DoSpawnGreatPerson(UnitTypes eUnit, bool bIncrementCount, b
 			}
 		}
 #endif
-#if defined(MOD_BUGFIX_MINOR)
 		if (bIncrementCount)
-#endif
 #if defined(MOD_GLOBAL_TRULY_FREE_GP)
 			kPlayer.GetReligions()->ChangeNumProphetsSpawned(1, bIsFree);
 #else
