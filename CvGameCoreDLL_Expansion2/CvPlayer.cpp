@@ -10702,7 +10702,7 @@ int CvPlayer::GetNumUnitsWithDomain(DomainTypes eDomain, bool bMilitaryOnly)
 	{
 		if(pLoopUnit->getDomainType() == eDomain)
 		{
-			if(!bMilitaryOnly || pLoopUnit->IsCombatUnit())
+			if(!bMilitaryOnly || pLoopUnit->IsCanAttack())
 			{
 				iNumUnits++;
 			}
@@ -14130,7 +14130,7 @@ void CvPlayer::receiveGoody(CvPlot* pPlot, GoodyTypes eGoody, CvUnit* pUnit)
 		{
 			CvUnit* pNewUnit = initUnit(eUnit, pPlot->getX(), pPlot->getY());
 			// see if there is an open spot to put him - no over-stacking allowed!
-			if(pNewUnit && pUnit && pNewUnit->IsCombatUnit())  
+			if(pNewUnit && pUnit && pNewUnit->IsCanAttack())  
 			{
 				pBestPlot = NULL;
 				iBestValue = INT_MAX;
@@ -19360,7 +19360,7 @@ void CvPlayer::DoYieldsFromKill(CvUnit* pAttackingUnit, CvUnit* pDefendingUnit, 
 {
 #if defined(MOD_BALANCE_CORE)
 	//Bonus resource in a city every time you win a battle.
-	if (MOD_BALANCE_CORE && pDefendingUnit != NULL && pDefendingUnit->IsCombatUnit())
+	if (MOD_BALANCE_CORE && pDefendingUnit != NULL && pDefendingUnit->IsCanAttack())
 	{
 		CvCity* pOriginCity = pCity;
 		if (pAttackingUnit != NULL)
@@ -30133,7 +30133,7 @@ int CvPlayer::GetNumMaintenanceFreeUnits(DomainTypes eDomain, bool bOnlyCombatUn
 
 		if (bOnlyCombatUnits)
 		{
-			if (!pLoopUnit->IsCombatUnit())
+			if (!pLoopUnit->IsCanAttack())
 			{
 				continue;
 			}
@@ -33213,7 +33213,7 @@ int CvPlayer::calculateMilitaryMight(DomainTypes eDomain) const
 	int iLoop;
 	for(const CvUnit* pLoopUnit = firstUnit(&iLoop); pLoopUnit != NULL; pLoopUnit = nextUnit(&iLoop))
 	{
-		if(!pLoopUnit->IsCombatUnit())
+		if(!pLoopUnit->IsCanAttack())
 			continue;
 
 		if (eDomain != NO_DOMAIN && pLoopUnit->getDomainType() != eDomain)
@@ -36770,7 +36770,7 @@ void CvPlayer::DoDeficit()
 	int iLoop;
 	for(CvUnit* pLoopUnit = firstUnit(&iLoop); pLoopUnit != NULL; pLoopUnit = nextUnit(&iLoop))
 	{
-		if(pLoopUnit->IsCombatUnit())
+		if(pLoopUnit->IsCanAttack())
 			iNumMilitaryUnits++;
 	}
 
@@ -38800,6 +38800,7 @@ void CvPlayer::CheckForMonopoly(ResourceTypes eResource)
 	}
 }
 #endif
+
 //	--------------------------------------------------------------------------------
 /// Get the monopoly percentage owned for eResource.
 int CvPlayer::GetMonopolyPercent(ResourceTypes eResource) const
@@ -38819,11 +38820,34 @@ int CvPlayer::GetMonopolyPercent(ResourceTypes eResource) const
 	if (iTotalNumResource <= 0)
 	{
 		// if we own a resource, but it's not on the map at all, it is 100%
+		// todo: what about other players?
 		return iOwnedNumResource > 0 ? 100 : 0;
 	}
 
 	return (iOwnedNumResource * 100) / iTotalNumResource;
 }
+
+bool CvPlayer::WouldGainMonopoly(ResourceTypes eResource, int iExtraResource) const
+{
+	if (iExtraResource <= 0)
+		return false;
+
+	int iCurrent = GetMonopolyPercent(eResource);
+	int iExtra = (iExtraResource * 100) / max(1,GC.getMap().getNumResources(eResource));
+
+	const CvResourceInfo* pkResourceInfo = GC.getResourceInfo(eResource);
+	if (pkResourceInfo->getResourceUsage() == RESOURCEUSAGE_LUXURY && !GC.getGame().GetGameLeagues()->IsLuxuryHappinessBanned(GetID(), eResource))
+	{
+		return (iCurrent + iExtra) > GC.getGLOBAL_RESOURCE_MONOPOLY_THRESHOLD();
+	}
+	else if (pkResourceInfo->getResourceUsage() == RESOURCEUSAGE_STRATEGIC)
+	{
+		return (iCurrent + iExtra) > GC.getSTRATEGIC_RESOURCE_MONOPOLY_THRESHOLD();
+	}
+
+	return false;
+}
+
 int CvPlayer::getCityYieldModFromMonopoly(YieldTypes eIndex) const
 {
 	CvAssertMsg(eIndex >= 0, "eIndex expected to be >= 0");
@@ -38831,6 +38855,7 @@ int CvPlayer::getCityYieldModFromMonopoly(YieldTypes eIndex) const
 
 	return m_aiCityYieldModFromMonopoly[eIndex];
 }
+
 void CvPlayer::changeCityYieldModFromMonopoly(YieldTypes eIndex, int iChange)
 {
 	CvAssertMsg(eIndex >= 0, "eIndex expected to be >= 0");
@@ -46166,7 +46191,7 @@ void CvPlayer::createGreatGeneral(UnitTypes eGreatPersonUnit, int iX, int iY)
 			pNotifications->Add(NOTIFICATION_GENERIC, strText.toUTF8(), strSummary.toUTF8(), pGreatPeopleUnit->getX(), pGreatPeopleUnit->getY(), -1);
 		}
 	}
-	if(pGreatPeopleUnit->IsCombatUnit() && getCapitalCity() != NULL)
+	if(pGreatPeopleUnit->IsCanAttack() && getCapitalCity() != NULL)
 	{
 		getCapitalCity()->addProductionExperience(pGreatPeopleUnit);
 		pGreatPeopleUnit->setOriginCity(getCapitalCity()->GetID());
@@ -46211,7 +46236,7 @@ void CvPlayer::createGreatGeneral(UnitTypes eGreatPersonUnit, int iX, int iY)
 
 	// In rare cases we can gain the general from an embarked unit being attacked, or from a hovering unit over coast
 	// so if this plot is water, relocate the Great General
-	if (pPlot->isWater() || pGreatPeopleUnit->IsCombatUnit()) {
+	if (pPlot->isWater() || pGreatPeopleUnit->IsCanAttack()) {
 		pGreatPeopleUnit->jumpToNearestValidPlot();
 	}
 #else
@@ -46333,7 +46358,7 @@ void CvPlayer::createGreatAdmiral(UnitTypes eGreatPersonUnit, int iX, int iY)
 			pNotifications->Add(NOTIFICATION_GENERIC, strText.toUTF8(), strSummary.toUTF8(), pGreatPeopleUnit->getX(), pGreatPeopleUnit->getY(), -1);
 		}
 	}
-	if(pGreatPeopleUnit->IsCombatUnit())
+	if(pGreatPeopleUnit->IsCanAttack())
 	{
 		getCapitalCity()->addProductionExperience(pGreatPeopleUnit);
 	}
@@ -47267,7 +47292,7 @@ void CvPlayer::UpdateMilitaryStats()
 	int iExpCount = 0, iExpSum = 0;
 	for (CvUnit* pLoopUnit = firstUnit(&iLoop); pLoopUnit != NULL; pLoopUnit = nextUnit(&iLoop))
 	{
-		if (pLoopUnit->IsCombatUnit() && pLoopUnit->AI_getUnitAIType() != UNITAI_EXPLORE)
+		if (pLoopUnit->IsCanAttack() && pLoopUnit->AI_getUnitAIType() != UNITAI_EXPLORE)
 		{
 			iExpCount++;
 			iExpSum += pLoopUnit->getExperienceTimes100();
@@ -49397,7 +49422,7 @@ void CvPlayer::DoVassalLevy()
 		int iLoop = 0;
 		for (pLoopUnit = firstUnit(&iLoop); pLoopUnit != NULL; pLoopUnit = nextUnit(&iLoop))
 		{
-			if (pLoopUnit->getDomainType() == DOMAIN_LAND && pLoopUnit->IsCombatUnit())
+			if (pLoopUnit->getDomainType() == DOMAIN_LAND && pLoopUnit->IsCanAttack())
 			{
 				UnitTypes eCurrentUnitType = pLoopUnit->getUnitType();
 				UnitAITypes eCurrentUnitAIType = pLoopUnit->AI_getUnitAIType();

@@ -14310,7 +14310,7 @@ void CvDiplomacyAI::SelectBestApproachTowardsMajorCiv(PlayerTypes ePlayer, bool 
 	////////////////////////////////////
 
 	// Target capacity should matter! If we can't get to them, let's not try to war on them!
-	bool bValidAttackTarget = GetPlayer()->GetMilitaryAI()->HaveValidAttackTarget(ePlayer);
+	bool bValidAttackTarget = GetPlayer()->GetMilitaryAI()->HavePossibleAttackTarget(ePlayer);
 	bool bCanCrossOcean = m_pPlayer->CanCrossOcean();
 	bool bCanAttackUs = false;
 	bool bWantsConquest = false;
@@ -19512,7 +19512,7 @@ int CvDiplomacyAI::CountUnitsAroundEnemyCities(PlayerTypes ePlayer, int iTurnRan
 	int iUnitLoop;
 	for (CvUnit* pLoopUnit = m_pPlayer->firstUnit(&iUnitLoop); pLoopUnit != NULL; pLoopUnit = m_pPlayer->nextUnit(&iUnitLoop))
 	{
-		if (!pLoopUnit->IsCombatUnit() || pLoopUnit->isProjectedToDieNextTurn())
+		if (!pLoopUnit->IsCanAttack() || pLoopUnit->isProjectedToDieNextTurn())
 			continue;
 
 		if (GET_PLAYER(ePlayer).GetCityDistancePathLength(pLoopUnit->plot()) < iTurnRange)
@@ -24880,7 +24880,7 @@ void CvDiplomacyAI::DoUpdateOnePlayerMilitaryAggressivePosture(PlayerTypes ePlay
 	for (CvUnit* pLoopUnit = kPlayer.firstUnit(&iUnitLoop); pLoopUnit != NULL; pLoopUnit = kPlayer.nextUnit(&iUnitLoop))
 	{
 		// Don't be scared of noncombat Units!
-		if (!pLoopUnit->IsCombatUnit() || pLoopUnit->getUnitInfo().GetDefaultUnitAIType() == UNITAI_EXPLORE)
+		if (!pLoopUnit->IsCanAttack() || pLoopUnit->getUnitInfo().GetDefaultUnitAIType() == UNITAI_EXPLORE)
 		{
 			continue;
 		}
@@ -36980,7 +36980,7 @@ bool CvDiplomacyAI::IsActHostileTowardsHuman(PlayerTypes eHuman, bool bIgnoreCur
 		return false;
 
 	// If we can't reach them, there's no point in being hostile.
-	if (!GetPlayer()->GetMilitaryAI()->HaveValidAttackTarget(eHuman))
+	if (!GetPlayer()->GetMilitaryAI()->HavePossibleAttackTarget(eHuman))
 		return false;
 
 	// Different ideology
@@ -38312,7 +38312,7 @@ int CvDiplomacyAI::GetCoopWarDesireScore(PlayerTypes eAllyPlayer, PlayerTypes eT
 	bool bBadness = false;
 
 	// No target? Pass!
-	if (!GetPlayer()->GetMilitaryAI()->HaveValidAttackTarget(eTargetPlayer))
+	if (!GetPlayer()->GetMilitaryAI()->HavePossibleAttackTarget(eTargetPlayer))
 		return 0;
 
 	// If we're in bad shape for war, we're not interested.

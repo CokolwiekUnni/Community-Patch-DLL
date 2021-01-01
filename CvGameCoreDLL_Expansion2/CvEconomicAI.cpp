@@ -2205,7 +2205,7 @@ void CvEconomicAI::DoReconState()
 			if(pLoopUnit->getUnitInfo().GetDefaultUnitAIType() == UNITAI_EXPLORE) 
 			{
 				//note that new units are created only afterwards, so here we pick up the units without an important assignment from last turn
-				if(pLoopUnit->getArmyID() == -1 && pLoopUnit->canRecruitFromTacticalAI())
+				if(pLoopUnit->canUseForAIOperation())
 				{
 					int iDistance = m_pPlayer->GetCityDistanceInPlots( pLoopUnit->plot() );
 					eligibleExplorers.push_back( make_pair(iDistance,pLoopUnit->GetID()) );
@@ -2300,7 +2300,7 @@ void CvEconomicAI::DoReconState()
 					 pLoopUnit->getUnitInfo().GetDefaultUnitAIType() == UNITAI_RESERVE_SEA ||
 					 pLoopUnit->getUnitInfo().GetDefaultUnitAIType() == UNITAI_ASSAULT_SEA))
 				{
-					if(pLoopUnit->getArmyID() == -1 && pLoopUnit->canRecruitFromTacticalAI())
+					if(pLoopUnit->canUseForAIOperation())
 					{
 						int iDistance = m_pPlayer->GetCityDistanceInPlots( pLoopUnit->plot() );
 
@@ -2424,22 +2424,20 @@ void CvEconomicAI::DoAntiquitySites()
 #endif
 	m_iVisibleAntiquitySites = iNumSites;
 }
+
 #if defined(MOD_BALANCE_CORE)
 void CvEconomicAI::DisbandMiscUnits()
 {
 	if (m_pPlayer->isMinorCiv())
 	{
-		CvUnit* pLoopUnit = NULL;
 		int iUnitLoop = 0;
-
-		// Look at map for loose workers
-		for (pLoopUnit = m_pPlayer->firstUnit(&iUnitLoop); pLoopUnit != NULL; pLoopUnit = m_pPlayer->nextUnit(&iUnitLoop))
+		for (CvUnit* pLoopUnit = m_pPlayer->firstUnit(&iUnitLoop); pLoopUnit != NULL; pLoopUnit = m_pPlayer->nextUnit(&iUnitLoop))
 		{
 			if (!pLoopUnit)
-			{
 				continue;
-			}
-			if (pLoopUnit->GetReligionData()->GetSpreadsLeft() > 0)
+
+			//disband missionaries, however we got them
+			if (pLoopUnit->GetReligionData()->GetSpreadsLeft(pLoopUnit) > 0)
 			{
 				pLoopUnit->scrap();
 				LogScrapUnit(pLoopUnit, 0, 0, -1, 0);
@@ -2447,6 +2445,7 @@ void CvEconomicAI::DisbandMiscUnits()
 		}
 	}
 }
+
 void CvEconomicAI::DisbandUselessSettlers()
 {
 	//If we want settlers, don't disband.
@@ -2507,7 +2506,7 @@ CvUnit* CvEconomicAI::FindSettlerToScrap(bool bMayBeInOperation)
 		if (!pLoopUnit->canScrap())
 			continue;
 
-		if(pLoopUnit->getDomainType() == DOMAIN_LAND && pLoopUnit->isFound() && !pLoopUnit->IsFoundAbroad() && !pLoopUnit->IsCombatUnit() && !pLoopUnit->IsGreatPerson())
+		if(pLoopUnit->getDomainType() == DOMAIN_LAND && pLoopUnit->isFound() && !pLoopUnit->IsFoundAbroad() && !pLoopUnit->IsCanAttack() && !pLoopUnit->IsGreatPerson())
 		{
 			if (bMayBeInOperation || pLoopUnit->getArmyID()!=-1)
 				return pLoopUnit;
@@ -2612,7 +2611,7 @@ CvUnit* CvEconomicAI::FindSeaWorkerToScrap()
 			continue;
 
 		UnitTypes eWorker = m_pPlayer->GetSpecificUnitType("UNITCLASS_WORKBOAT");
-		if(pLoopUnit->getDomainType() == DOMAIN_SEA && pLoopUnit->getUnitType() == eWorker && !pLoopUnit->IsCombatUnit() && pLoopUnit->getSpecialUnitType() == NO_SPECIALUNIT)
+		if(pLoopUnit->getDomainType() == DOMAIN_SEA && pLoopUnit->getUnitType() == eWorker && !pLoopUnit->IsCanAttack() && pLoopUnit->getSpecialUnitType() == NO_SPECIALUNIT)
 		{
 			return pLoopUnit;
 		}
@@ -3008,7 +3007,7 @@ CvUnit* CvEconomicAI::FindWorkerToScrap()
 #else
 		UnitTypes eWorker = (UnitTypes) GC.getInfoTypeForString("UNIT_WORKER");
 #endif
-		if(pLoopUnit->getDomainType() == DOMAIN_LAND && pLoopUnit->getUnitType() == eWorker && !pLoopUnit->IsCombatUnit() && pLoopUnit->getSpecialUnitType() == NO_SPECIALUNIT)
+		if(pLoopUnit->getDomainType() == DOMAIN_LAND && pLoopUnit->getUnitType() == eWorker && !pLoopUnit->IsCanAttack() && pLoopUnit->getSpecialUnitType() == NO_SPECIALUNIT)
 		{
 			int WorkRateMod = 100 - pLoopUnit->GetWorkRateMod();
 			if (WorkRateMod < 100 && WorkRateMod > 0)
@@ -3039,7 +3038,7 @@ CvUnit* CvEconomicAI::FindWorkerToScrap()
 #else
 			UnitTypes eWorker = (UnitTypes)GC.getInfoTypeForString("UNIT_WORKER");
 #endif
-			if (pLoopUnit->getDomainType() == DOMAIN_LAND && pLoopUnit->getUnitType() == eWorker && !pLoopUnit->IsCombatUnit() && pLoopUnit->getSpecialUnitType() == NO_SPECIALUNIT)
+			if (pLoopUnit->getDomainType() == DOMAIN_LAND && pLoopUnit->getUnitType() == eWorker && !pLoopUnit->IsCanAttack() && pLoopUnit->getSpecialUnitType() == NO_SPECIALUNIT)
 			{
 				return pLoopUnit;
 			}
