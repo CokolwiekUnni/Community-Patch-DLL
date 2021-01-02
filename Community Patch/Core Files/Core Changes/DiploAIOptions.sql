@@ -131,7 +131,7 @@ INSERT INTO Defines (Name, Value)
 SELECT 'DIPLOAI_AGGRESSIVE_MODE', '0';
 
 -- [DISABLE DOMINATION ONLY AGGRESSION BOOST]
--- If set to 1, AI civilizations' Aggressive Mode (see below) will not be automatically enabled if only Domination and/or Time victories are possible.
+-- If set to 1, AI civilizations' Aggressive Mode (see above) will not be automatically enabled if only Domination and/or Time victories are possible.
 -- Instead, they will be set to their normal levels of aggression. NOTE: If Aggressive Mode is enabled manually above, this setting does nothing.
 INSERT INTO Defines (Name, Value)
 SELECT 'DIPLOAI_DISABLE_DOMINATION_ONLY_AGGRESSION', '0';

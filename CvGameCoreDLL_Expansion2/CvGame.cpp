@@ -10946,7 +10946,7 @@ static unsigned long giLastState = 0;
 
 int CvGame::getSmallFakeRandNum(int iNum, const CvPlot& input)
 {
-	unsigned long iState = input.getX()*17 + input.getY()*23 + getGameTurn()*3;
+	unsigned long iState = input.getX()*17 + input.getY()*23 + getTurnSlice()*3;
 
 	/*
 	//safety check
@@ -10976,7 +10976,7 @@ int CvGame::getSmallFakeRandNum(int iNum, const CvPlot& input)
 
 int CvGame::getSmallFakeRandNum(int iNum, int iExtraSeed)
 {
-	unsigned long iState = getGameTurn() + abs(iExtraSeed);
+	unsigned long iState = getTurnSlice() + abs(iExtraSeed);
 
 	/*
 	//safety check

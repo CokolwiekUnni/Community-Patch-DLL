@@ -184,8 +184,7 @@ void CvBarbarians::DoCampActivationNotice(CvPlot* pPlot)
 	// Default to between 8 and 12 turns per spawn
 #if defined(MOD_CORE_REDUCE_RANDOMNESS)
 	int iSpawnTurnAddition = 12;
-	int iRand = kGame.getSmallFakeRandNum(10, *pPlot);
-	int iAddVal = kGame.isReallyNetworkMultiPlayer() ? 5 : iRand;
+	int iAddVal = kGame.isReallyNetworkMultiPlayer() ? 5 : kGame.getSmallFakeRandNum(10, *pPlot);
 	int iNumTurnsToSpawn = iSpawnTurnAddition + iAddVal;
 #else
 	int iNumTurnsToSpawn = 8 + kGame.getJonRandNum(5, "Barb Spawn Rand call");
@@ -248,8 +247,7 @@ void CvBarbarians::DoCityActivationNotice(CvPlot* pPlot)
 	//bumped a bit - too many barbs gets annoying.
 
 #if defined(MOD_CORE_REDUCE_RANDOMNESS)
-	int iRand = kGame.getSmallFakeRandNum(10, *pPlot);
-	int iAddVal = kGame.isReallyNetworkMultiPlayer() ? 5 : iRand;
+	int iAddVal = kGame.isReallyNetworkMultiPlayer() ? 5 : kGame.getSmallFakeRandNum(10, *pPlot);
 	int iNumTurnsToSpawn = 7 + iAddVal;
 #else
 	int iNumTurnsToSpawn = 15 + kGame.getJonRandNum(5, "Barb Spawn Rand call");

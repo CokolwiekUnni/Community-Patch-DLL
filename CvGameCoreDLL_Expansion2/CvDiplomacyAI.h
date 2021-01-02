@@ -1748,6 +1748,8 @@ public:
 	void LogCloseEmbassy(PlayerTypes ePlayer);
 
 private:
+	PlayerTypes GetID() const;
+
 	// Estimations of other players' tendencies
 	int GetEstimatePlayerVictoryCompetitiveness(PlayerTypes ePlayer) const;
 	int GetEstimatePlayerWonderCompetitiveness(PlayerTypes ePlayer) const;

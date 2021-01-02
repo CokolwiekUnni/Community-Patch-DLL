@@ -3423,7 +3423,6 @@ bool EconomicAIHelpers::IsTestStrategy_EarlyExpansion(EconomicAIStrategyTypes eS
 	if (pPlayer->isHuman() && GC.getGame().isOption(GAMEOPTION_ONE_CITY_CHALLENGE))
 		return false;
 
-	// scale based on flavor and world size
 	if(pPlayer->IsEmpireUnhappy())
 		return false;
 
@@ -3432,39 +3431,15 @@ bool EconomicAIHelpers::IsTestStrategy_EarlyExpansion(EconomicAIStrategyTypes eS
 	if(eBuildCriticalDefenses != NO_MILITARYAISTRATEGY && pPlayer->GetMilitaryAI()->IsUsingStrategy(eBuildCriticalDefenses) && !pPlayer->IsCramped())
 		return false;
 
-	int iLoopCity = 0;
-	bool bCoastal = false;
-	CvCity* pLoopCity = NULL;
-	for(pLoopCity = pPlayer->firstCity(&iLoopCity); pLoopCity != NULL; pLoopCity = pPlayer->nextCity(&iLoopCity))
+	//do this check last, it can be expensive
+	CvPlot* pSettlePlot = pPlayer->GetBestSettlePlot(NULL);
+	if (!pSettlePlot)
 	{
-		if(pLoopCity->isCoastal())
-		{
-			bCoastal = true;
-			break;
-		}
+		return false;
 	}
 
-	if(!bCoastal && pPlayer->getNumCities()<5)
-	{
-		return true;
-	}
-
-	// Over 75% of territory on our landmass full? Time to look elsewhere.
-	if(pPlayer->getCapitalCity() != NULL)
-	{
-		CvArea* pArea = GC.getMap().getArea(pPlayer->getCapitalCity()->getArea());
-
-		int iNumOwnedTiles = pArea->getNumOwnedTiles();
-		int iNumTiles = max(1,pArea->getNumTiles());
-
-		int iOwnageRatio = iNumOwnedTiles * 100 / iNumTiles;
-		if(iOwnageRatio < GC.getAI_STRATEGY_AREA_IS_FULL_PERCENT())
-		{
-			return true;
-		}
-	}
-
-	return false;
+	//run this strategy as long as there are good settle plots without close neighbors
+	return GC.getGame().GetClosestCityDistancePathLength(pSettlePlot, true) > 6;
 }
 
 /// "Enough Expansion" Player Strategy: Never want a lot of settlers hanging around

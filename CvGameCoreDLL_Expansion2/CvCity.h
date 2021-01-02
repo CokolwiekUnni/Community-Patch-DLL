@@ -1635,6 +1635,7 @@ public:
 	bool HasBuildingClass(BuildingClassTypes iBuildingClassType) const;
 	bool HasAnyWonder() const;
 	bool HasWonder(BuildingTypes iBuildingType) const;
+	bool IsBuildingWorldWonder() const;
 	bool IsCivilization(CivilizationTypes iCivilizationType) const;
 	bool HasFeature(FeatureTypes iFeatureType) const;
 	bool HasWorkedFeature(FeatureTypes iFeatureType) const;
