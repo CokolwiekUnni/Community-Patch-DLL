@@ -11676,7 +11676,7 @@ int CvLeagueAI::ScoreVoteChoiceYesNo(CvProposal* pProposal, int iChoice, bool bE
 
 			if (GetPlayer()->GetDiplomacyAI()->GetWarmongerThreat(eTargetPlayer) >= THREAT_SEVERE)
 			{
-				iScore += 30;
+				iScore += 50;
 			}
 
 			if (GET_TEAM(GetPlayer()->getTeam()).isAtWar(GET_PLAYER(eTargetPlayer).getTeam()))
@@ -11745,7 +11745,7 @@ int CvLeagueAI::ScoreVoteChoiceYesNo(CvProposal* pProposal, int iChoice, bool bE
 				iScore -= 150;
 			}
 
-			if (GetPlayer()->GetDiplomacyAI()->IsHasDefensivePact(eTargetPlayer))
+			if (GetPlayer()->GetDiplomacyAI()->IsHasDefensivePact(eTargetPlayer) && !GetPlayer()->GetDiplomacyAI()->IsWantsToEndDefensivePactWithPlayer(eTargetPlayer))
 			{
 				iScore -= 50;
 			}

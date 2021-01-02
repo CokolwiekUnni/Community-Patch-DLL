@@ -1469,7 +1469,7 @@ public:
 
 	// Working With Player
 	bool IsDoFAcceptable(PlayerTypes ePlayer);
-	bool IsEndDoFAcceptable(PlayerTypes ePlayer);
+	bool IsEndDoFAcceptable(PlayerTypes ePlayer, bool bIgnoreCurrentDoF = false);
 	bool IsTooEarlyForDoF(PlayerTypes ePlayer);
 
 	int GetNumRA();

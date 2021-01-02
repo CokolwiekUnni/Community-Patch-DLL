@@ -21237,8 +21237,8 @@ bool CvDiplomacyAI::IsGoodChoiceForDoF(PlayerTypes ePlayer)
 	if (IsUntrustworthy(ePlayer))
 		return false;
 	
-	// If we're willing to denounce them, don't make friends with them!
-	if (IsDenounceAcceptable(ePlayer) || IsDenounceFriendAcceptable(ePlayer))
+	// If we're willing to end our friendship with them, don't make friends with them!
+	if (IsDenounceAcceptable(ePlayer) || IsEndDoFAcceptable(ePlayer, true) || IsDenounceFriendAcceptable(ePlayer))
 		return false;
 
 	return true;
@@ -21273,8 +21273,8 @@ bool CvDiplomacyAI::IsGoodChoiceForDefensivePact(PlayerTypes ePlayer)
 	if (IsUntrustworthy(ePlayer))
 		return false;
 	
-	// If we're willing to denounce them, don't make a DP with them!
-	if (IsDenounceAcceptable(ePlayer) || IsDenounceFriendAcceptable(ePlayer))
+	// If we're willing to end our friendship with them, don't make a DP with them!
+	if (IsDenounceAcceptable(ePlayer) || IsEndDoFAcceptable(ePlayer, true) || IsDenounceFriendAcceptable(ePlayer))
 		return false;
 
 	return true;
@@ -21308,8 +21308,8 @@ bool CvDiplomacyAI::IsGoodChoiceForResearchAgreement(PlayerTypes ePlayer)
 	if (IsUntrustworthy(ePlayer))
 		return false;
 	
-	// If we're willing to denounce them, don't make a RA with them!
-	if (IsDenounceFriendAcceptable(ePlayer))
+	// If we're willing to end our friendship with them, don't make a RA with them!
+	if (IsEndDoFAcceptable(ePlayer) || IsDenounceFriendAcceptable(ePlayer))
 		return false;
 
 	// One of us has already researched all techs
@@ -39748,16 +39748,16 @@ bool CvDiplomacyAI::IsDoFAcceptable(PlayerTypes ePlayer)
 }
 
 /// Do we want to end our friendship with ePlayer early?
-bool CvDiplomacyAI::IsEndDoFAcceptable(PlayerTypes ePlayer)
+bool CvDiplomacyAI::IsEndDoFAcceptable(PlayerTypes ePlayer, bool bIgnoreCurrentDoF)
 {
-	if (!IsDoFAccepted(ePlayer))
+	if (!bIgnoreCurrentDoF && !IsDoFAccepted(ePlayer))
 		return false;
 
 	if (IsUntrustworthy(ePlayer))
 		return true;
 
 	// Don't end friendships we just made.
-	if (GetTurnsSinceBefriendedPlayer(ePlayer) <= 15)
+	if (!bIgnoreCurrentDoF && GetTurnsSinceBefriendedPlayer(ePlayer) <= 15)
 		return false;
 
 	MajorCivApproachTypes eApproach = GetMajorCivApproach(ePlayer, /*bHideTrueFeelings*/ false);
@@ -39768,7 +39768,7 @@ bool CvDiplomacyAI::IsEndDoFAcceptable(PlayerTypes ePlayer)
 		return true;
 
 	MajorCivOpinionTypes eOpinion = GetMajorCivOpinion(ePlayer);
-	if (eOpinion >= MAJOR_CIV_OPINION_FAVORABLE)
+	if (eOpinion >= MAJOR_CIV_OPINION_FRIEND)
 		return false;
 
 	if (eOpinion <= MAJOR_CIV_OPINION_ENEMY)
@@ -39921,9 +39921,6 @@ bool CvDiplomacyAI::IsEndDoFAcceptable(PlayerTypes ePlayer)
 		break;
 	case DOF_TYPE_BATTLE_BROTHERS:
 		iChance += 10;
-		break;
-	default:
-		return true;
 		break;
 	}
 
