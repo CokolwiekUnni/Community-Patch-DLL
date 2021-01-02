@@ -4250,6 +4250,10 @@ void CvDiplomacyAI::ChangeOtherPlayerNumMajorsAttacked(PlayerTypes ePlayer, int 
 	if (!IsHasMet(ePlayer))
 		return;
 
+	// War declarations between humans don't apply warmongering except for the attacked team and their DPs/vassals (prevents exploit)
+	if (eAttackedTeam != GetTeam() && !GET_TEAM(GetTeam()).IsHasDefensivePact(eAttackedTeam) && !GET_TEAM(GetTeam()).IsVassal(eAttackedTeam) && GET_PLAYER(ePlayer).isHuman() && GET_TEAM(eAttackedTeam).isHuman())
+		return;
+
 	if (MOD_DIPLOMACY_CIV4_FEATURES)
 	{
 		// Ignore our master's warmongering
@@ -4269,6 +4273,15 @@ void CvDiplomacyAI::ChangeOtherPlayerNumMajorsAttacked(PlayerTypes ePlayer, int 
 
 		if (eTeam == eAttackedTeam || GET_TEAM(eTeam).IsHasDefensivePact(eAttackedTeam) || GET_TEAM(eTeam).IsVassal(eAttackedTeam) || GET_TEAM(eAttackedTeam).IsVassal(eTeam))
 		{
+			if (IsWantsSneakAttack(eAttackedPlayer))
+				return;
+
+			if (IsArmyInPlaceForAttack(eAttackedPlayer))
+				return;
+
+			if (GetMajorCivApproach(eAttackedPlayer) == MAJOR_CIV_APPROACH_WAR)
+				return;
+
 			CoopWarStates eCoopWarState = GetCoopWarState(ePlayer, eAttackedPlayer);
 			if (eCoopWarState >= COOP_WAR_STATE_PREPARING)
 			{

@@ -2051,6 +2051,9 @@ int CvDealAI::GetCityValueForBuyer(CvCity* pCity, PlayerTypes eSeller, PlayerTyp
 	if (!pCity)
 		return INT_MAX;
 
+	if (pCity->isCapital())
+		return INT_MAX;
+
 	//note that it can also happen that a player pretends to buy a city they already own, just to see the appropriate price
 	CvPlayer& seller = GET_PLAYER(eSeller);
 	CvPlayer& buyer = GET_PLAYER(eBuyer);
@@ -2081,7 +2084,12 @@ int CvDealAI::GetCityValueForBuyer(CvCity* pCity, PlayerTypes eSeller, PlayerTyp
 	}
 
 	//never give away holy cities
-	if (pCity->GetCityReligions()->IsHolyCityAnyReligion() || pCity->isCapital())
+	ReligionTypes eSellerReligion = seller.GetReligions()->GetCurrentReligion(false);
+
+	if (eSellerReligion != NO_RELIGION && pCity->GetCityReligions()->IsHolyCityForReligion(eSellerReligion))
+		return INT_MAX;
+
+	if (!bPeaceTreatyTrade && pCity->GetCityReligions()->IsHolyCityAnyReligion())
 		return INT_MAX;
 
 	//initial value
@@ -2093,7 +2101,7 @@ int CvDealAI::GetCityValueForBuyer(CvCity* pCity, PlayerTypes eSeller, PlayerTyp
 	iItemValue += (max(1,iEconomicValue-1000)/3); //tricky to define the correct factor
 
 	//prevent cheesy exploit: founding cities just to sell them
-	if (GC.getGame().getGameTurn() - pCity->getGameTurnFounded() < 42 + GC.getGame().getSmallFakeRandNum(5, iEconomicValue))
+	if ((GC.getGame().getGameTurn() - pCity->getGameTurnFounded()) < (42 + GC.getGame().getSmallFakeRandNum(5, iEconomicValue)))
 		return INT_MAX;
 
 	//obviously the seller doesn't really want it
@@ -2217,7 +2225,7 @@ int CvDealAI::GetCityValueForBuyer(CvCity* pCity, PlayerTypes eSeller, PlayerTyp
 	if (pCity->IsOriginalMajorCapital())
 	{
 		//don't sell capital if we're collecting them
-		if (seller.GetDiplomacyAI()->IsGoingForWorldConquest() || seller.GetDiplomacyAI()->IsCloseToDominationVictory())
+		if ((!bPeaceTreatyTrade && seller.GetDiplomacyAI()->IsGoingForWorldConquest()) || seller.GetDiplomacyAI()->IsCloseToDominationVictory())
 			return MAX_INT;
 		else
 			iItemValue *= 3;
