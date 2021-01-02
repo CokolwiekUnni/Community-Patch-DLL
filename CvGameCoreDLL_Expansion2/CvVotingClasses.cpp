@@ -11342,11 +11342,10 @@ int CvLeagueAI::ScoreVoteChoiceYesNo(CvProposal* pProposal, int iChoice, bool bE
 #endif
 
 	// == Grand Strategy ==
-	AIGrandStrategyTypes eGrandStrategy = GetPlayer()->GetGrandStrategyAI()->GetActiveGrandStrategy();
-	bool bSeekingDiploVictory = eGrandStrategy == GC.getInfoTypeForString("AIGRANDSTRATEGY_UNITED_NATIONS") || GetPlayer()->GetDiplomacyAI()->IsCloseToDiploVictory();
-	bool bSeekingConquestVictory = eGrandStrategy == GC.getInfoTypeForString("AIGRANDSTRATEGY_CONQUEST") || GetPlayer()->GetDiplomacyAI()->IsCloseToDominationVictory();
-	bool bSeekingCultureVictory = eGrandStrategy == GC.getInfoTypeForString("AIGRANDSTRATEGY_CULTURE") || GetPlayer()->GetDiplomacyAI()->IsCloseToCultureVictory();
-	bool bSeekingScienceVictory = eGrandStrategy == GC.getInfoTypeForString("AIGRANDSTRATEGY_SPACESHIP") || GetPlayer()->GetDiplomacyAI()->IsCloseToSSVictory();
+	bool bSeekingDiploVictory = GetPlayer()->GetDiplomacyAI()->GetVictoryFocus() == VICTORY_FOCUS_DIPLOMATIC;
+	bool bSeekingConquestVictory = GetPlayer()->GetDiplomacyAI()->GetVictoryFocus() == VICTORY_FOCUS_DOMINATION;
+	bool bSeekingCultureVictory = GetPlayer()->GetDiplomacyAI()->GetVictoryFocus() == VICTORY_FOCUS_CULTURE;
+	bool bSeekingScienceVictory = GetPlayer()->GetDiplomacyAI()->GetVictoryFocus() == VICTORY_FOCUS_SCIENCE;
 
 	// == Gameplay Effects ==
 	// International Projects
@@ -13576,8 +13575,7 @@ int CvLeagueAI::ScoreVoteChoicePlayer(CvProposal* pProposal, int iChoice, bool b
 	int iScore = 0;
 
 	// == Grand Strategy and other factors ==
-	AIGrandStrategyTypes eGrandStrategy = GetPlayer()->GetGrandStrategyAI()->GetActiveGrandStrategy();
-	bool bSeekingDiploVictory = eGrandStrategy == GC.getInfoTypeForString("AIGRANDSTRATEGY_UNITED_NATIONS") || GetPlayer()->GetDiplomacyAI()->IsCloseToDiploVictory();
+	bool bSeekingDiploVictory = GetPlayer()->GetDiplomacyAI()->GetVictoryFocus() == VICTORY_FOCUS_DIPLOMATIC;
 
 	// == Diplomatic Victory ==
 	if (pProposal->GetEffects()->bDiplomaticVictory)
