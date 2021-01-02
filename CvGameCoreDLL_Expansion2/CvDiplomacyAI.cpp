@@ -13487,14 +13487,14 @@ bool CvDiplomacyAI::IsWillingToAttackFriend(PlayerTypes ePlayer, bool bDirect, b
 		bool bGoodReason = IsBackstabber(); // if we've already backstabbed one friend, more willing to backstab others
 		bGoodReason |= bEndgameAggressive;
 		bGoodReason |= bUntrustworthy;
-		bGoodReason |= (IsCloseToDominationVictory() && GET_PLAYER(ePlayer).GetCapitalConqueror() == NO_PLAYER);
-		bGoodReason |= (GET_PLAYER(ePlayer).GetDiplomacyAI()->GetWeDeclaredWarOnFriendCount() > 0); // they also backstabbed people
-		bGoodReason |= (GetBiggestCompetitor() == ePlayer);
-		bGoodReason |= (GetWarmongerThreat(ePlayer) >= THREAT_SEVERE);
+		bGoodReason |= IsCloseToDominationVictory() && GET_PLAYER(ePlayer).GetCapitalConqueror() == NO_PLAYER;
+		bGoodReason |= GET_PLAYER(ePlayer).GetDiplomacyAI()->GetWeDeclaredWarOnFriendCount() > 0; // they also backstabbed people
+		bGoodReason |= GetBiggestCompetitor() == ePlayer;
+		bGoodReason |= GetWarmongerThreat(ePlayer) >= THREAT_SEVERE;
 
 		if (!bDirect)
 		{
-			bGoodReason |= (IsGoingForWorldConquest() && GET_PLAYER(ePlayer).GetCapitalConqueror() == NO_PLAYER);
+			bGoodReason |= IsGoingForWorldConquest() && GET_PLAYER(ePlayer).GetCapitalConqueror() == NO_PLAYER;
 			bGoodReason |= IsMajorCompetitor(ePlayer);
 		}
 
@@ -13538,21 +13538,25 @@ bool CvDiplomacyAI::IsWillingToAttackFriend(PlayerTypes ePlayer, bool bDirect, b
 			// Indirect backstab via Defensive Pact - much lower bar. Aim here is to prevent AIs from getting caught up in DP gridlock.
 			else
 			{
-				// Don't do it if we're very loyal
-				if (!IsBackstabber() && !bEndgameAggressive && GetLoyalty() > 8)
-					return false;
+				// Ignore vassals!
+				if (!GET_PLAYER(ePlayer).IsVassalOfSomeone())
+				{
+					// Don't do it if we're very loyal
+					if (!IsBackstabber() && !bEndgameAggressive && GetLoyalty() > 8)
+						return false;
 
-				// Don't do it if we'd lose a valuable trade partner
-				if (IsStrategicTradePartner(ePlayer))
-					return false;
+					// Don't do it if we'd lose a valuable trade partner
+					if (IsStrategicTradePartner(ePlayer))
+						return false;
 
-				// Impulse wars against people we like are a bad idea.
-				if (bImpulse && GetMajorCivOpinion(ePlayer) >= MAJOR_CIV_OPINION_FRIEND)
-					return false;
+					// Impulse wars against people we like are a bad idea.
+					if (bImpulse && GetMajorCivOpinion(ePlayer) >= MAJOR_CIV_OPINION_FRIEND)
+						return false;
 
-				// Impulse wars against neighbors that aren't easy targets are a bad idea.
-				if (bImpulse && GET_PLAYER(ePlayer).GetProximityToPlayer(GetID()) >= PLAYER_PROXIMITY_CLOSE && !IsEasyTarget(ePlayer))
-					return false;
+					// Impulse wars against neighbors that aren't easy targets are a bad idea.
+					if (bImpulse && GET_PLAYER(ePlayer).GetProximityToPlayer(GetID()) >= PLAYER_PROXIMITY_CLOSE && !IsEasyTarget(ePlayer))
+						return false;
+				}
 			}
 		}
 	}
@@ -19163,9 +19167,9 @@ void CvDiplomacyAI::SelectBestApproachTowardsMajorCiv(PlayerTypes ePlayer, bool 
 			{
 				if (GetVictoryFocus() == VICTORY_FOCUS_DIPLOMATIC || bCloseToDiploVictory)
 				{
-					vApproachScores[MAJOR_CIV_APPROACH_FRIENDLY] += vApproachBias[MAJOR_CIV_APPROACH_FRIENDLY] * 4;
-					vApproachScores[MAJOR_CIV_APPROACH_WAR] -= vApproachBias[MAJOR_CIV_APPROACH_WAR] * 4;
-					vApproachScores[MAJOR_CIV_APPROACH_HOSTILE] -= vApproachBias[MAJOR_CIV_APPROACH_HOSTILE] * 4;
+					vApproachScores[MAJOR_CIV_APPROACH_FRIENDLY] += vApproachBias[MAJOR_CIV_APPROACH_FRIENDLY] * 5;
+					vApproachScores[MAJOR_CIV_APPROACH_WAR] -= vApproachBias[MAJOR_CIV_APPROACH_WAR] * 5;
+					vApproachScores[MAJOR_CIV_APPROACH_HOSTILE] -= vApproachBias[MAJOR_CIV_APPROACH_HOSTILE] * 5;
 				}
 			}
 
@@ -19181,19 +19185,19 @@ void CvDiplomacyAI::SelectBestApproachTowardsMajorCiv(PlayerTypes ePlayer, bool 
 				// Casus Belli = more war, less friendly
 				if (GC.getGame().GetGameLeagues()->IsWorldWar(eMyPlayer) > 0)
 				{
-					vApproachScores[MAJOR_CIV_APPROACH_FRIENDLY] -= vApproachBias[MAJOR_CIV_APPROACH_FRIENDLY] * 4;
-					vApproachScores[MAJOR_CIV_APPROACH_NEUTRAL] -= vApproachBias[MAJOR_CIV_APPROACH_NEUTRAL] * 4;
-					vApproachScores[MAJOR_CIV_APPROACH_WAR] += vApproachBias[MAJOR_CIV_APPROACH_WAR] * 4;
-					vApproachScores[MAJOR_CIV_APPROACH_HOSTILE] += vApproachBias[MAJOR_CIV_APPROACH_HOSTILE] * 4;
+					vApproachScores[MAJOR_CIV_APPROACH_FRIENDLY] -= vApproachBias[MAJOR_CIV_APPROACH_FRIENDLY] * 5;
+					vApproachScores[MAJOR_CIV_APPROACH_NEUTRAL] -= vApproachBias[MAJOR_CIV_APPROACH_NEUTRAL] * 5;
+					vApproachScores[MAJOR_CIV_APPROACH_WAR] += vApproachBias[MAJOR_CIV_APPROACH_WAR] * 5;
+					vApproachScores[MAJOR_CIV_APPROACH_HOSTILE] += vApproachBias[MAJOR_CIV_APPROACH_HOSTILE] * 5;
 				}
 
 				// Global Peace Accords = less war, more friendly
 				if (GC.getGame().GetGameLeagues()->GetUnitMaintenanceMod(eMyPlayer) > 0)
 				{
-					vApproachScores[MAJOR_CIV_APPROACH_FRIENDLY] += vApproachBias[MAJOR_CIV_APPROACH_FRIENDLY] * 4;
-					vApproachScores[MAJOR_CIV_APPROACH_NEUTRAL] += vApproachBias[MAJOR_CIV_APPROACH_NEUTRAL] * 4;
-					vApproachScores[MAJOR_CIV_APPROACH_WAR] -= vApproachBias[MAJOR_CIV_APPROACH_WAR] * 4;
-					vApproachScores[MAJOR_CIV_APPROACH_HOSTILE] -= vApproachBias[MAJOR_CIV_APPROACH_HOSTILE] * 4;
+					vApproachScores[MAJOR_CIV_APPROACH_FRIENDLY] += vApproachBias[MAJOR_CIV_APPROACH_FRIENDLY] * 5;
+					vApproachScores[MAJOR_CIV_APPROACH_NEUTRAL] += vApproachBias[MAJOR_CIV_APPROACH_NEUTRAL] * 5;
+					vApproachScores[MAJOR_CIV_APPROACH_WAR] -= vApproachBias[MAJOR_CIV_APPROACH_WAR] * 5;
+					vApproachScores[MAJOR_CIV_APPROACH_HOSTILE] -= vApproachBias[MAJOR_CIV_APPROACH_HOSTILE] * 5;
 				}
 			}
 		}
@@ -25025,7 +25029,7 @@ bool CvDiplomacyAI::IsIgnorePolicyDifferences(PlayerTypes ePlayer) const
 	if (IsAtWar(ePlayer) || IsCapitalCapturedBy(ePlayer) || IsHolyCityCapturedBy(ePlayer) || IsUntrustworthy(ePlayer))
 		return false;
 
-	if (IsPlayerLiberatedCapital(ePlayer) || WasResurrectedBy(ePlayer))
+	if (IsPlayerLiberatedCapital(ePlayer) || IsPlayerLiberatedHolyCity(ePlayer) || IsPlayerReturnedCapital(ePlayer) || IsPlayerReturnedHolyCity(ePlayer) || WasResurrectedBy(ePlayer))
 		return true;
 
 	if (IsDoFAccepted(ePlayer) || GetDoFType(ePlayer) >= DOF_TYPE_ALLIES)
@@ -25074,7 +25078,7 @@ bool CvDiplomacyAI::IsIgnoreReligionDifferences(PlayerTypes ePlayer) const
 	if (IsPlayerSameIdeology(ePlayer))
 		return true;
 
-	if (IsPlayerLiberatedCapital(ePlayer) || WasResurrectedBy(ePlayer) || GetDoFType(ePlayer) == DOF_TYPE_BATTLE_BROTHERS)
+	if (IsPlayerLiberatedCapital(ePlayer) || IsPlayerLiberatedHolyCity(ePlayer) || IsPlayerReturnedCapital(ePlayer) || IsPlayerReturnedHolyCity(ePlayer) || WasResurrectedBy(ePlayer) || GetDoFType(ePlayer) == DOF_TYPE_BATTLE_BROTHERS)
 		return true;
 
 	if (IsCityRecentlyLiberatedBy(ePlayer))
@@ -25124,7 +25128,7 @@ bool CvDiplomacyAI::IsIgnoreIdeologyDifferences(PlayerTypes ePlayer) const
 	}
 #endif
 
-	if (IsCityRecentlyLiberatedBy(ePlayer))
+	if (IsPlayerLiberatedHolyCity(ePlayer) || IsCityRecentlyLiberatedBy(ePlayer))
 		return true;
 
 	return false;
