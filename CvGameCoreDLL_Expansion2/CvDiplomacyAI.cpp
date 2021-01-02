@@ -4273,14 +4273,17 @@ void CvDiplomacyAI::ChangeOtherPlayerNumMajorsAttacked(PlayerTypes ePlayer, int 
 
 		if (eTeam == eAttackedTeam || GET_TEAM(eTeam).IsHasDefensivePact(eAttackedTeam) || GET_TEAM(eTeam).IsVassal(eAttackedTeam) || GET_TEAM(eAttackedTeam).IsVassal(eTeam))
 		{
-			if (IsWantsSneakAttack(eAttackedPlayer))
-				return;
+			if (!GetPlayer()->isHuman())
+			{
+				if (IsWantsSneakAttack(eAttackedPlayer))
+					return;
 
-			if (IsArmyInPlaceForAttack(eAttackedPlayer))
-				return;
+				if (IsArmyInPlaceForAttack(eAttackedPlayer))
+					return;
 
-			if (GetMajorCivApproach(eAttackedPlayer) == MAJOR_CIV_APPROACH_WAR)
-				return;
+				if (GetMajorCivApproach(eAttackedPlayer) == MAJOR_CIV_APPROACH_WAR)
+					return;
+			}
 
 			CoopWarStates eCoopWarState = GetCoopWarState(ePlayer, eAttackedPlayer);
 			if (eCoopWarState >= COOP_WAR_STATE_PREPARING)
