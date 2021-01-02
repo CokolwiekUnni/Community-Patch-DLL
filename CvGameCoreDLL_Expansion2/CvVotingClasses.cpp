@@ -11663,9 +11663,13 @@ int CvLeagueAI::ScoreVoteChoiceYesNo(CvProposal* pProposal, int iChoice, bool bE
 	{
 		CvAssertMsg(eTargetPlayer != NO_PLAYER, "Evaluating an embargo on NO_PLAYER. Please send Anton your save file and version.");
 		// Major Civ relations
-		if (GET_PLAYER(eTargetPlayer).getTeam() == GetPlayer()->getTeam())
+		if (eTargetPlayer == GetPlayer()->GetID())
 		{
 			iScore -= 1000;
+		}
+		else if (GET_PLAYER(eTargetPlayer).getTeam() == GetPlayer()->getTeam())
+		{
+			iScore -= 700;
 		}
 		else if (GET_PLAYER(eTargetPlayer).isMajorCiv())
 		{
