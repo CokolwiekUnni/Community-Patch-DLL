@@ -543,7 +543,7 @@ int CvFlavorManager::GetAdjustedValue(int iOriginalValue, int iPlusMinus, int iM
 		iSeed = 0;
 	}
 
-	iSeed += (iOriginalValue + iPlusMinus) * 5;
+	iSeed += (iOriginalValue + iPlusMinus) * 200;
 
 	// Randomize!
 	int iAdjust = GC.getGame().getSmallFakeRandNum((iPlusMinus * 2 + 1), (iOriginalValue * iSeed));

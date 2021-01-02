@@ -1406,7 +1406,7 @@ int CvDiplomacyAI::GetRandomPersonalityWeight(int iOriginalValue, int& iSeed)
 		iSeed = 0;
 	}
 
-	iSeed += (iOriginalValue + iPlusMinus + ID) * 5;
+	iSeed += (iOriginalValue + iPlusMinus + ID) * 200;
 
 	// Randomize!
 	int iAdjust = GC.getGame().getSmallFakeRandNum((iPlusMinus * 2 + 1), (iOriginalValue * iSeed * ID));
