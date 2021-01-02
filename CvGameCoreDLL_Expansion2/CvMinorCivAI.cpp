@@ -11494,6 +11494,9 @@ void CvMinorCivAI::SetFriends(PlayerTypes ePlayer, bool bValue)
 /// Are we about to lose our status? (used in Diplo AI)
 bool CvMinorCivAI::IsCloseToNotBeingAllies(PlayerTypes ePlayer)
 {
+	if (GetPermanentAlly() == ePlayer)
+		return false;
+
 #if defined(MOD_CITY_STATE_SCALE)
 	int iBuffer = GetEffectiveFriendshipWithMajor(ePlayer) - GetAlliesThreshold(ePlayer);
 #else

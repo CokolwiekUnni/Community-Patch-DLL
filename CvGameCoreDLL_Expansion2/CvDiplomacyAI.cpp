@@ -5507,6 +5507,12 @@ bool CvDiplomacyAI::IsPlayerAskedNotToDig(PlayerTypes ePlayer) const
 		return true;
 	}
 
+	// Can't ask if we're their teammate or vassal - promise is automatic
+	if (IsTeammate(ePlayer) || IsVassal(ePlayer))
+	{
+		return true;
+	}
+
 	return m_abAskedNotToDig[(int)ePlayer];
 }
 
@@ -39490,10 +39496,6 @@ bool CvDiplomacyAI::IsDontSettleAcceptable(PlayerTypes ePlayer) const
 	// Debug mode
 	if (GET_PLAYER(ePlayer).isHuman() && GC.getGame().IsAIMustAcceptHumanDiscussRequests())
 		return true;
-
-	// Always acceptable for teammates
-	if (GetPlayer()->GetDiplomacyAI()->IsTeammate(ePlayer))
-		return true;
 	
 	// Always acceptable if they resurrected us
 	if (WasResurrectedBy(ePlayer))
@@ -39504,15 +39506,15 @@ bool CvDiplomacyAI::IsDontSettleAcceptable(PlayerTypes ePlayer) const
 	{
 		if (GetMajorCivApproach(ePlayer, /*bHideTrueFeelings*/ false) != MAJOR_CIV_APPROACH_FRIENDLY || GetMajorCivOpinion(ePlayer) < MAJOR_CIV_OPINION_FRIEND)
 		{
-			if (!IsDoFAccepted(ePlayer) && !GET_TEAM(GET_PLAYER(ePlayer).getTeam()).IsHasDefensivePact(GetTeam()) && GetCoopWarScore(ePlayer) <= 0)
+			if (!IsDoFAccepted(ePlayer) && !IsHasDefensivePact(ePlayer) && GetCoopWarScore(ePlayer) <= 0)
 			{
 				return false;
 			}
 		}
 	}
 	
-	// Refuse all promises if close to world conquest
-	if (GetPlayer()->GetDiplomacyAI()->IsCloseToDominationVictory())
+	// Refuse all promises if close to world conquest and they still have their original capital
+	if (IsCloseToDominationVictory() && GET_PLAYER(ePlayer).GetCapitalConqueror() != NO_PLAYER)
 		return false;
 	
 	// They're close to victory?
@@ -39650,10 +39652,6 @@ bool CvDiplomacyAI::IsStopSpyingAcceptable(PlayerTypes ePlayer) const
 	// Debug mode
 	if (GET_PLAYER(ePlayer).isHuman() && GC.getGame().IsAIMustAcceptHumanDiscussRequests())
 		return true;
-
-	// Always acceptable for teammates
-	if (GetPlayer()->GetDiplomacyAI()->IsTeammate(ePlayer))
-		return true;
 	
 	// Always acceptable if they resurrected us
 	if (WasResurrectedBy(ePlayer))
@@ -39664,15 +39662,15 @@ bool CvDiplomacyAI::IsStopSpyingAcceptable(PlayerTypes ePlayer) const
 	{
 		if (GetMajorCivApproach(ePlayer, /*bHideTrueFeelings*/ false) != MAJOR_CIV_APPROACH_FRIENDLY || GetMajorCivOpinion(ePlayer) < MAJOR_CIV_OPINION_FRIEND)
 		{
-			if (!IsDoFAccepted(ePlayer) && !GET_TEAM(GET_PLAYER(ePlayer).getTeam()).IsHasDefensivePact(GetTeam()) && GetCoopWarScore(ePlayer) <= 0)
+			if (!IsDoFAccepted(ePlayer) && !IsHasDefensivePact(ePlayer) && GetCoopWarScore(ePlayer) <= 0)
 			{
 				return false;
 			}
 		}
 	}
 	
-	// Refuse all promises if close to world conquest
-	if (GetPlayer()->GetDiplomacyAI()->IsCloseToDominationVictory())
+	// Refuse all promises if close to world conquest and they still have their original capital
+	if (IsCloseToDominationVictory() && GET_PLAYER(ePlayer).GetCapitalConqueror() != NO_PLAYER)
 		return false;
 	
 	// They're close to victory?
@@ -41094,7 +41092,7 @@ bool CvDiplomacyAI::IsStopSpreadingReligionAcceptable(PlayerTypes ePlayer)
 	// Always acceptable if they resurrected us
 	if (WasResurrectedBy(ePlayer))
 		return true;
-	
+
 	// Must accept if they're our master
 	if (IsVassal(ePlayer))
 		return true;
@@ -41104,15 +41102,15 @@ bool CvDiplomacyAI::IsStopSpreadingReligionAcceptable(PlayerTypes ePlayer)
 	{
 		if (GetMajorCivApproach(ePlayer, /*bHideTrueFeelings*/ false) != MAJOR_CIV_APPROACH_FRIENDLY || GetMajorCivOpinion(ePlayer) < MAJOR_CIV_OPINION_FRIEND)
 		{
-			if (!IsDoFAccepted(ePlayer) && !GET_TEAM(GET_PLAYER(ePlayer).getTeam()).IsHasDefensivePact(GetTeam()) && GetCoopWarScore(ePlayer) <= 0)
+			if (!IsDoFAccepted(ePlayer) && !IsHasDefensivePact(ePlayer) && GetCoopWarScore(ePlayer) <= 0)
 			{
 				return false;
 			}
 		}
 	}
 	
-	// Refuse all promises if close to world conquest
-	if (GetPlayer()->GetDiplomacyAI()->IsCloseToDominationVictory())
+	// Refuse all promises if close to world conquest and they still have their original capital
+	if (IsCloseToDominationVictory() && GET_PLAYER(ePlayer).GetCapitalConqueror() != NO_PLAYER)
 		return false;
 	
 	// They're close to victory?
@@ -41164,10 +41162,6 @@ bool CvDiplomacyAI::IsStopDiggingAcceptable(PlayerTypes ePlayer) const
 	// Debug mode
 	if (GET_PLAYER(ePlayer).isHuman() && GC.getGame().IsAIMustAcceptHumanDiscussRequests())
 		return true;
-
-	// Always acceptable for teammates
-	if (GetPlayer()->GetDiplomacyAI()->IsTeammate(ePlayer))
-		return true;
 	
 	// Always acceptable if they resurrected us
 	if (WasResurrectedBy(ePlayer))
@@ -41182,15 +41176,15 @@ bool CvDiplomacyAI::IsStopDiggingAcceptable(PlayerTypes ePlayer) const
 	{
 		if (GetMajorCivApproach(ePlayer, /*bHideTrueFeelings*/ false) != MAJOR_CIV_APPROACH_FRIENDLY || GetMajorCivOpinion(ePlayer) < MAJOR_CIV_OPINION_FRIEND)
 		{
-			if (!IsDoFAccepted(ePlayer) && !GET_TEAM(GET_PLAYER(ePlayer).getTeam()).IsHasDefensivePact(GetTeam()) && GetCoopWarScore(ePlayer) <= 0)
+			if (!IsDoFAccepted(ePlayer) && !IsHasDefensivePact(ePlayer) && GetCoopWarScore(ePlayer) <= 0)
 			{
 				return false;
 			}
 		}
 	}
 	
-	// Refuse all promises if close to world conquest
-	if (GetPlayer()->GetDiplomacyAI()->IsCloseToDominationVictory())
+	// Refuse all promises if close to world conquest and they still have their original capital
+	if (IsCloseToDominationVictory() && GET_PLAYER(ePlayer).GetCapitalConqueror() != NO_PLAYER)
 		return false;
 	
 	// They're close to victory?

@@ -9580,7 +9580,6 @@ void CvEspionageAI::BuildMinorCityList(EspionageCityList& aMinorCityList)
 		}
 
 		CvMinorCivAI* pMinorCivAI = GET_PLAYER(eTargetPlayer).GetMinorCivAI();
-		CvMinorCivInfo* pMinorInfo = GC.getMinorCivInfo(pMinorCivAI->GetMinorCivType());
 		MinorCivApproachTypes eApproach = pDiploAI->GetMinorCivApproach(eTargetPlayer);
 		int iFriendshipWithMinor = pMinorCivAI->GetEffectiveFriendshipWithMajor(m_pPlayer->GetID());
 		
@@ -9607,61 +9606,66 @@ void CvEspionageAI::BuildMinorCityList(EspionageCityList& aMinorCityList)
 			{
 			case PLAN_PLAY_NORMAL:
 				// If we're not protective or friendly, then don't bother with minor diplo
-				if(eApproach == MINOR_CIV_APPROACH_PROTECTIVE || eApproach == MINOR_CIV_APPROACH_FRIENDLY)
+				if (eApproach == MINOR_CIV_APPROACH_PROTECTIVE || eApproach == MINOR_CIV_APPROACH_FRIENDLY)
 				{
 					// Nearly everyone likes to grow
-					if(pMinorInfo->GetMinorCivTrait() == MINOR_CIV_TRAIT_MARITIME && !m_pPlayer->IsEmpireUnhappy())
+					if (pMinorCivAI->GetTrait() == MINOR_CIV_TRAIT_MARITIME && !m_pPlayer->IsEmpireUnhappy())
 					{
 						iValue += /*20*/ GC.getMC_GIFT_WEIGHT_MARITIME_GROWTH() * iGrowthFlavor * max(1, m_pPlayer->getNumCities() / 3);
 					}
 
+					// If unhappy, prioritize mercantile
+					if (pMinorCivAI->GetTrait() == MINOR_CIV_TRAIT_MERCANTILE && m_pPlayer->IsEmpireUnhappy())
+					{
+						iValue += 100;
+					}
+
 					// Slight negative weight towards militaristic
-					if(pMinorInfo->GetMinorCivTrait() == MINOR_CIV_TRAIT_MILITARISTIC && !pDiploAI->IsGoingForWorldConquest())
+					if (pMinorCivAI->GetTrait() == MINOR_CIV_TRAIT_MILITARISTIC && pDiploAI->GetVictoryFocus() != VICTORY_FOCUS_DOMINATION && !(MOD_BALANCE_CORE && m_pPlayer->GetPlayerTraits()->IsWarmonger()))
 					{
 						iValue += /*-50*/ GC.getMC_GIFT_WEIGHT_MILITARISTIC();
 					}
 
 					// If they have a resource we don't have, add extra weight
 					int iResourcesWeLack = pMinorCivAI->GetNumResourcesMajorLacks(m_pPlayer->GetID());
-					if(iResourcesWeLack > 0)
+					if (iResourcesWeLack > 0)
 					{
 						iValue += (iResourcesWeLack* /*80*/ GC.getMC_GIFT_WEIGHT_RESOURCE_WE_NEED());
 					}
 
 					// If we're protective this is worth more than if we're friendly
-					if(eApproach == MINOR_CIV_APPROACH_PROTECTIVE)
+					if (eApproach == MINOR_CIV_APPROACH_PROTECTIVE)
 					{
 						iValue += /*10*/ GC.getMC_GIFT_WEIGHT_PROTECTIVE();
 					}
 
 					// If the minor is hostile, then reduce the weighting
-					if(pMinorCivAI->GetPersonality() == MINOR_CIV_PERSONALITY_HOSTILE)
+					if (pMinorCivAI->GetPersonality() == MINOR_CIV_PERSONALITY_HOSTILE)
 					{
 						iValue += /*-20*/ GC.getMC_GIFT_WEIGHT_HOSTILE();
 					}
 
 					// The closer we are the better
-					if(m_pPlayer->GetProximityToPlayer(eTargetPlayer) == PLAYER_PROXIMITY_NEIGHBORS)
-						iValue += /*5*/ GC.getMC_GIFT_WEIGHT_NEIGHBORS();
-					else if(m_pPlayer->GetProximityToPlayer(eTargetPlayer) == PLAYER_PROXIMITY_CLOSE)
-						iValue += /*4*/ GC.getMC_GIFT_WEIGHT_CLOSE();
-					else if(m_pPlayer->GetProximityToPlayer(eTargetPlayer) == PLAYER_PROXIMITY_FAR)
-						iValue += /*3*/ GC.getMC_GIFT_WEIGHT_FAR();
-
-					// Did we bully you recently?  If so, giving you gold now would be very odd.
-					if(pMinorCivAI->IsRecentlyBulliedByMajor(m_pPlayer->GetID()))
+					switch (m_pPlayer->GetProximityToPlayer(eTargetPlayer))
 					{
-						iValue -= 100; //antonjs: todo: constant/XML
+					case PLAYER_PROXIMITY_NEIGHBORS:
+						iValue += 20;
+						break;
+					case PLAYER_PROXIMITY_CLOSE:
+						iValue += 10;
+						break;
+					case PLAYER_PROXIMITY_FAR:
+						iValue -= 10;
+						break;
+					case PLAYER_PROXIMITY_DISTANT:
+						iValue -= 20;
+						break;
 					}
 
-					// if we're allies
-					if (pMinorCivAI->IsAllies(m_pPlayer->GetID()))
+					// if we're secure allies, don't score this player
+					if (pMinorCivAI->IsAllies(m_pPlayer->GetID()) && !pMinorCivAI->IsCloseToNotBeingAllies(m_pPlayer->GetID()))
 					{
-						// and we're secure as their allies, ignore the scoring
-						if (!pMinorCivAI->IsCloseToNotBeingAllies(m_pPlayer->GetID()))
-						{
-							iValue = 0;
-						}
+						iValue = 0;
 					}
 					else
 					{
@@ -9670,28 +9674,49 @@ void CvEspionageAI::BuildMinorCityList(EspionageCityList& aMinorCityList)
 					}
 				}
 
-				if (pDiploAI->IsGoingForCultureVictory())
+				if (eApproach != MINOR_CIV_APPROACH_BULLY && eApproach != MINOR_CIV_APPROACH_CONQUEST)
 				{
-					// no modifiers
-				}
-				else if (pDiploAI->IsGoingForWorldConquest())
-				{
-					if (pMinorCivAI->GetTrait() == MINOR_CIV_TRAIT_MILITARISTIC)
+					if (pDiploAI->GetVictoryFocus() == VICTORY_FOCUS_CULTURE)
 					{
-						iValue += 999;
+						if (pMinorCivAI->GetTrait() == MINOR_CIV_TRAIT_CULTURED)
+						{
+							iValue += 999;
+						}
+						else if (pMinorCivAI->GetTrait() == MINOR_CIV_TRAIT_MERCANTILE)
+						{
+							iValue += 500;
+						}
 					}
-				}
-				else if (pDiploAI->IsGoingForDiploVictory())
-				{
-					// no modifiers
-				}
-				else if (pDiploAI->IsGoingForSpaceshipVictory())
-				{
-					// no modifiers
-				}
-				else // the player doesn't know how they're going to try to win yet
-				{
-					// no modifiers
+					else if (pDiploAI->GetVictoryFocus() == VICTORY_FOCUS_DOMINATION)
+					{
+						if (pMinorCivAI->GetTrait() == MINOR_CIV_TRAIT_MILITARISTIC)
+						{
+							iValue += 999;
+						}
+						else if (pMinorCivAI->GetTrait() == MINOR_CIV_TRAIT_MERCANTILE)
+						{
+							iValue += 500;
+						}
+					}
+					else if (pDiploAI->GetVictoryFocus() == VICTORY_FOCUS_SCIENCE)
+					{
+						if (pMinorCivAI->GetTrait() == MINOR_CIV_TRAIT_MARITIME && !m_pPlayer->IsEmpireUnhappy())
+						{
+							iValue += 999;
+						}
+						else if (pMinorCivAI->GetTrait() == MINOR_CIV_TRAIT_MILITARISTIC)
+						{
+							iValue += 500;
+						}
+						else if (pMinorCivAI->GetTrait() == MINOR_CIV_TRAIT_MERCANTILE)
+						{
+							iValue += 250;
+						}
+					}
+					else // diplo victory, or the player doesn't know how they're going to try to win yet
+					{
+						// no modifiers
+					}
 				}
 				break;
 
