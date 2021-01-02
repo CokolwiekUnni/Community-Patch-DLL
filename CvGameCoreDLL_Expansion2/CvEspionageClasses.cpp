@@ -9611,13 +9611,13 @@ void CvEspionageAI::BuildMinorCityList(EspionageCityList& aMinorCityList)
 					// Nearly everyone likes to grow
 					if (pMinorCivAI->GetTrait() == MINOR_CIV_TRAIT_MARITIME && !m_pPlayer->IsEmpireUnhappy())
 					{
-						iValue += /*20*/ GC.getMC_GIFT_WEIGHT_MARITIME_GROWTH() * iGrowthFlavor * max(1, m_pPlayer->getNumCities() / 3);
+						iValue += /*10*/ GC.getMC_GIFT_WEIGHT_MARITIME_GROWTH() * iGrowthFlavor * max(1, m_pPlayer->getNumCities() / 3);
 					}
 
 					// If unhappy, prioritize mercantile
 					if (pMinorCivAI->GetTrait() == MINOR_CIV_TRAIT_MERCANTILE && m_pPlayer->IsEmpireUnhappy())
 					{
-						iValue += 100;
+						iValue += 50;
 					}
 
 					// Slight negative weight towards militaristic
@@ -9630,7 +9630,7 @@ void CvEspionageAI::BuildMinorCityList(EspionageCityList& aMinorCityList)
 					int iResourcesWeLack = pMinorCivAI->GetNumResourcesMajorLacks(m_pPlayer->GetID());
 					if (iResourcesWeLack > 0)
 					{
-						iValue += (iResourcesWeLack* /*80*/ GC.getMC_GIFT_WEIGHT_RESOURCE_WE_NEED());
+						iValue += (iResourcesWeLack * /*80*/ GC.getMC_GIFT_WEIGHT_RESOURCE_WE_NEED());
 					}
 
 					// If we're protective this is worth more than if we're friendly
